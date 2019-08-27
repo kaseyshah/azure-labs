@@ -1,3 +1,4 @@
+# Kasey's Azure Networking Lab Scenario CLI commands solution
 # create resource group
 az group create -n rsg-aznetw -l westus2
 #
