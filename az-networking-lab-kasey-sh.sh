@@ -7,27 +7,27 @@ az account list-locations
 #
 # create vnet10
 az network vnet create -g rsg-aznetw -n vnet10 --address-prefix 10.10.0.0/16 -l westus2
-!creating two subnets in vnet10
+#creating two subnets in vnet10
 az network vnet subnet create -n s10v10 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.10.10.0/24
 az network vnet subnet create -n s20v10 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.10.20.0/24
 #
 # create vnet20
 az network vnet create -g rsg-aznetw -n vnet20 --address-prefix 10.20.0.0/16 -l eastus
-!creating two subnets in vnet20
-az network vnet subnet create -n s10v20 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.20.10.0/24
-az network vnet subnet create -n s20v20 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.20.20.0/24
+#creating two subnets in vnet20
+az network vnet subnet create -n s10v20 -g rsg-aznetw --vnet-name vnet20 --address-prefix 10.20.10.0/24
+az network vnet subnet create -n s20v20 -g rsg-aznetw --vnet-name vnet20 --address-prefix 10.20.20.0/24
 #
 # create vnet30
 az network vnet create -g rsg-aznetw -n vnet30 --address-prefix 10.30.0.0/16 -l westeurope
-!creating two subnets in vnet30
-az network vnet subnet create -n s10v30 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.30.10.0/24
-az network vnet subnet create -n s20v30 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.30.20.0/24
+#creating two subnets in vnet30
+az network vnet subnet create -n s10v30 -g rsg-aznetw --vnet-name vnet30 --address-prefix 10.30.10.0/24
+az network vnet subnet create -n s20v30 -g rsg-aznetw --vnet-name vnet30 --address-prefix 10.30.20.0/24
 #
 # create vnet40
 az network vnet create -g rsg-aznetw -n vnet40 --address-prefix 10.40.0.0/16 -l southeastasia
-!creating two subnets in vnet40
-az network vnet subnet create -n s10v40 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.40.10.0/24
-az network vnet subnet create -n s20v40 -g rsg-aznetw --vnet-name vnet10 --address-prefix 10.40.20.0/24
+#creating two subnets in vnet40
+az network vnet subnet create -n s10v40 -g rsg-aznetw --vnet-name vnet40 --address-prefix 10.40.10.0/24
+az network vnet subnet create -n s20v40 -g rsg-aznetw --vnet-name vnet40 --address-prefix 10.40.20.0/24
 #
 # create vm-s10v10
 az vm create -n vm-s10v10 -g rsg-aznetw \
@@ -48,7 +48,7 @@ az vm create -n vm-s20v10 -g rsg-aznetw \
     --admin-password Microsoft@123 \
     --image UbuntuLTS \
     --public-ip-address-allocation static \
-    --vnet-name vnet20 \
+    --vnet-name vnet10 \
     --subnet s20v10 \
     --location westus2 \
     --zone 2
@@ -63,6 +63,7 @@ az vm create -n vm-s10v20 -g rsg-aznetw \
     --vnet-name vnet20 \
     --subnet s10v20 \
     --location eastus \
+    --public-ip-sku standard \
     --zone 1
 #
 # create vm-s20v20
@@ -75,6 +76,7 @@ az vm create -n vm-s20v20 -g rsg-aznetw \
     --vnet-name vnet20 \
     --subnet s20v20 \
     --location eastus \
+    --public-ip-sku standard \
     --zone 2
 #
 # create vm-s10v30
@@ -87,7 +89,8 @@ az vm create -n vm-s10v30 -g rsg-aznetw \
     --vnet-name vnet30 \
     --subnet s10v30 \
     --location westeurope \
-    --zone 1
+    --zone 1 \
+    --no-wait
 #
 # create vm-s20v30
 az vm create -n vm-s20v30 -g rsg-aznetw \
@@ -142,15 +145,15 @@ az vm create -n vm-s20v40 -g rsg-aznetw \
 #
 # vnet peering from vnet10 to vnet20
 az network vnet peering create \
-    -g rsg-aznetw \
-    -n vnet10-to-vnet20 \
+    --resource-group rsg-aznetw \
+    --name vnet10-to-vnet20 \
     --vnet-name vnet10 \
     --remote-vnet vnet20 \
     --allow-vnet-access
 # vnet peering from vnet20 to vnet10
 az network vnet peering create \
-    -g rsg-aznetw \
-    -n vnet20-to-vnet10 \
+    --resource-group rsg-aznetw \
+    --name vnet20-to-vnet10 \
     --vnet-name vnet20 \
     --remote-vnet vnet10 \
     --allow-vnet-access
@@ -213,7 +216,8 @@ az network local-gateway create \
 az network public-ip create \
     --name vpngwip-vnet20 \
     --resource-group rsg-aznetw \
-    --allocation-method static
+    --allocation-method dynamic \
+    --location eastus
 #
 # create vpn gateway in vnet20
 az network vnet-gateway create \
@@ -224,11 +228,12 @@ az network vnet-gateway create \
     --gateway-type Vpn \
     --vpn-type RouteBased \
     --sku VpnGw1 \
+    --location eastus \
     --no-wait
 # view vpn gw
 az network vnet-gateway show -n vpngw-vnet20 -g rsg-aznetw
-# view public ip of vpn gw
-az network public-ip show --name vpngw-vnet20 -g rsg-aznetw
+# view public ip status of vpn gw
+az network public-ip show --name vpngwip-vnet20 -g rsg-aznetw
 # create a vpn connection
 az network vpn-connection create \
     --name onprem-site1-to-vpngw-vnet20 \
