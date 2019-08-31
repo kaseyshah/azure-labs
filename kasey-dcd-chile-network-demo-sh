@@ -1,9 +1,16 @@
-# Kasey's Azure Networking Lab Scenario CLI commands solution
-# create resource group
+# Kasey's Demo at DCD Chile Keynote presentation
+# Building data center network on Microsoft Azure
+# Reauirements below: 
+# (1) Build 4 data centres across the world each with 60K hosts capacity
+# (2) Deploy two subnets on each network
+# (3) Deploy two virtual machines in each subnet of all Data Center networks
+# (4) Configure routing across all Data Center networks for bi-directional access 
+# 
+# create a resource group
 az group create -n rsg-dcd -l westus2
 #
-# command to list regions is 
-az account list-locations
+# command to list regions 
+# az account list-locations
 #
 # create vnet10
 az network vnet create -g rsg-dcd -n vnet10 --address-prefix 10.10.0.0/16 -l westus2
@@ -166,3 +173,12 @@ az network vnet peering create \
     --remote-vnet vnet20 \
     --allow-vnet-access
 #
+# list virtual machines with IP addresses 
+az vm list -d -o table
+# ssh to vm-s10v10 and vm-s10v40
+# pint each other with private IP
+#
+# Delete all resources above
+az group delete -n rsg-dcd --yes --no-wait
+#
+# finished
